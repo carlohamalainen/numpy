@@ -10,6 +10,7 @@ import re
 import sys
 import warnings
 import operator
+import types
 
 import numpy as np
 import numpy.core.numeric as _nx
@@ -2003,7 +2004,11 @@ class vectorize(object):
             if func is self.pyfunc and self._ufunc is not None:
                 ufunc = self._ufunc
             else:
-                ufunc = self._ufunc = frompyfunc(func, len(args), nout)
+                ufunc = frompyfunc(func, len(args), nout)
+
+                # Avoid circular reference to class method.
+                if type(func) != types.MethodType:
+                    self._ufunc = ufunc
         else:
             # Get number of outputs and output types by calling the function on
             # the first entries of args.  We also cache the result to prevent
